@@ -110,21 +110,20 @@ static Result allocate_shared_mem(prog_addrs_t *shared, prog_addrs_t *vaddr, int
 static Result load_code(u64 progid, prog_addrs_t *shared, u64 prog_handle, int is_compressed)
 {
   IFile file;
-  FS_Archive archive;
-  FS_Path path;
+  FS_Path archivepath;
+  FS_Path filepath;
   Result res;
   u64 size;
   u64 total;
 
-  archive.id = ARCHIVE_SAVEDATA_AND_CONTENT2;
-  archive.lowPath.type = PATH_BINARY;
-  archive.lowPath.data = &prog_handle;
-  archive.lowPath.size = 8;
-  //archive.handle = prog_handle; // not needed
-  path.type = PATH_BINARY;
-  path.data = CODE_PATH;
-  path.size = sizeof(CODE_PATH);
-  if (R_FAILED(IFile_Open(&file, archive, path, FS_OPEN_READ)))
+  archivepath.type = PATH_BINARY;
+  archivepath.data = &prog_handle;
+  archivepath.size = 8;
+
+  filepath.type = PATH_BINARY;
+  filepath.data = CODE_PATH;
+  filepath.size = sizeof(CODE_PATH);
+  if (R_FAILED(IFile_Open(&file, ARCHIVE_SAVEDATA_AND_CONTENT2, archivepath, filepath, FS_OPEN_READ)))
   {
     svcBreak(USERBREAK_ASSERT);
   }

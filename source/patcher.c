@@ -179,19 +179,10 @@ static int patch_memory(start, size, pattern, patsize, offset, replace, repsize,
 
 static int file_open(IFile *file, FS_ArchiveID id, const char *path, int flags)
 {
-  FS_Archive archive;
-  FS_Path ppath;
-  size_t len;
+  FS_Path archivepath = {PATH_EMPTY, 1, (u8 *)""};
+  FS_Path filepath = {PATH_ASCII, strnlen(path, 255) + 1, path};
 
-  len = strnlen(path, PATH_MAX);
-  archive.id = id;
-  archive.lowPath.type = PATH_EMPTY;
-  archive.lowPath.size = 1;
-  archive.lowPath.data = (u8 *)"";
-  ppath.type = PATH_ASCII;
-  ppath.data = path;
-  ppath.size = len+1;
-  return IFile_Open(file, archive, ppath, flags);
+  return IFile_Open(file, id, archivepath, filepath, flags);
 }
 
 static int patch_secureinfo()
