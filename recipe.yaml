@@ -1,7 +1,7 @@
-description: Temporary 3ds_injector
+description: Custom loader module (region-free)
 
 patches:
-    3ds_injector.cxi:
+    loader.cxi:
         type: Sysmodule
         subtype: NATIVE_FIRM
         versions:
@@ -16,6 +16,8 @@ patches:
                 0x52: 0
                 0x5C: 0
                 0x5E: 0
+                0x64: 0
+                0x66: 0
             n3ds:
                 0x04: 0
                 0x0F: 0
@@ -24,3 +26,5 @@ patches:
                 0x21: 0
                 0x2D: 0
                 0x2F: 0
+                0x35: 0
+                0x37: 0
