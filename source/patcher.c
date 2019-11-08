@@ -254,18 +254,6 @@ int patch_code(u64 progid, u8 *code, u32 size)
                 region_free_patch, 
                 sizeof(region_free_patch), 1
                 );
-    } else if (
-            progid == 0x0004001000020000LL ||
-            progid == 0x0004001000021000LL ||
-            progid == 0x0004001000022000LL ||
-            progid == 0x0004001000026000LL ||
-            progid == 0x0004001000027000LL ||
-            progid == 0x0004001000028000LL
-            )
-    {
-        static const wchar_t *version = L"Ver.";
-        static const wchar_t *version_patch = L"CAKE";
-        patch_memory(code, size, version, 8, 0, version_patch, 8, 1);
     } else if (progid == 0x0004013000008002LL) {
         static const char stop_updates_pattern[] =
         {
