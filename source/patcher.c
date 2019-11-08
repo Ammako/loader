@@ -254,6 +254,16 @@ int patch_code(u64 progid, u8 *code, u32 size)
                 region_free_patch, 
                 sizeof(region_free_patch), 1
                 );
+        u32 i;
+        for(i = 4; i < size; i += 4)
+        {
+            u32 *code32 = (u32 *)(code + i);
+            if(code32[1] == 0xE1A0000D && (*code32 & 0xFFFFFF00) == 0x0A000000 && (code32[-1] & 0xFFFFFF00) == 0xE1110000)
+                {
+                    *code32 = 0xE320F000;
+                    break;
+                }
+        }
     } else if (progid == 0x0004013000008002LL) {
         static const char stop_updates_pattern[] =
         {
