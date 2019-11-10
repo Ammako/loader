@@ -254,6 +254,7 @@ int patch_code(u64 progid, u8 *code, u32 size)
                 region_free_patch, 
                 sizeof(region_free_patch), 1
                 );
+        //https://github.com/AuroraWright/Luma3DS/blob/dfd50d9d7596ed1b77e0c2cd791aebd8d53cc401/sysmodules/loader/source/patcher.c#L594
         u32 i;
         for(i = 4; i < size; i += 4)
         {
