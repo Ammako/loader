@@ -185,58 +185,14 @@ static int file_open(IFile *file, FS_ArchiveID id, const char *path, int flags)
   return IFile_Open(file, id, archivepath, filepath, flags);
 }
 
-static int patch_secureinfo()
-{
-  IFile file;
-  Result ret;
-  u64 total;
-
-  if (secureinfo[0] == 0xFF)
-  {
-    return 0;
-  }
-  ret = file_open(&file, ARCHIVE_SDMC, "/SecureInfo_A", FS_OPEN_READ);
-  if (R_SUCCEEDED(ret))
-  {
-    ret = IFile_Read(&file, &total, secureinfo, sizeof(secureinfo));
-    IFile_Close(&file);
-    if (R_SUCCEEDED(ret) && total == sizeof(secureinfo))
-    {
-      ret = file_open(&file, ARCHIVE_NAND_RW, "/sys/SecureInfo_C", FS_OPEN_WRITE | FS_OPEN_CREATE);
-      if (R_SUCCEEDED(ret))
-      {
-        ret = IFile_Write(&file, &total, secureinfo, sizeof(secureinfo), FS_WRITE_FLUSH);
-        IFile_Close(&file);
-      }
-      secureinfo[0] = 0xFF; // we repurpose this byte as status
-    }
-  }
-  else // get file from NAND
-  {
-    ret = file_open(&file, ARCHIVE_NAND_RW, "/sys/SecureInfo_C", FS_OPEN_READ);
-    if (R_SUCCEEDED(ret))
-    {
-      ret = IFile_Read(&file, &total, secureinfo, sizeof(secureinfo));
-      IFile_Close(&file);
-      if (R_SUCCEEDED(ret) && total == sizeof(secureinfo))
-      {
-        secureinfo[0] = 0xFF;
-      }
-    }
-  }
-  return ret;
-}
-
 int patch_code(u64 progid, u8 *code, u32 size)
 {
-    if (
-            progid == 0x0004003000008F02LL || // USA Menu
-            progid == 0x0004003000008202LL || // JPN Menu
-            progid == 0x0004003000009802LL || // EUR Menu
-            progid == 0x000400300000A102LL || // CHN Menu
-            progid == 0x000400300000A902LL || // KOR Menu
-            progid == 0x000400300000B102LL    // TWN Menu
-       ) 
+    if (progid == 0x0004003000008F02LL || // USA Menu
+        progid == 0x0004003000008202LL || // JPN Menu
+        progid == 0x0004003000009802LL || // EUR Menu
+        progid == 0x000400300000A102LL || // CHN Menu
+        progid == 0x000400300000A902LL || // KOR Menu
+        progid == 0x000400300000B102LL)   // TWN Menu
     {
         static const char region_free_pattern[] = 
         {
@@ -254,6 +210,7 @@ int patch_code(u64 progid, u8 *code, u32 size)
                 region_free_patch, 
                 sizeof(region_free_patch), 1
                 );
+
         //https://github.com/AuroraWright/Luma3DS/blob/dfd50d9d7596ed1b77e0c2cd791aebd8d53cc401/sysmodules/loader/source/patcher.c#L594
         u32 i;
         for(i = 4; i < size; i += 4)
@@ -265,7 +222,10 @@ int patch_code(u64 progid, u8 *code, u32 size)
                     break;
                 }
         }
-    } else if (progid == 0x0004013000008002LL) {
+    }
+
+    else if (progid == 0x0004013000008002LL) //NS
+    {
         static const char stop_updates_pattern[] =
         {
             0x0C, 0x18, 0xE1, 0xD8
@@ -280,6 +240,25 @@ int patch_code(u64 progid, u8 *code, u32 size)
                 stop_updates_patch,
                 sizeof(stop_updates_patch), 2
                 );
+    }
+
+    else if (progid == 0x0004013000001702LL) //CFG
+    {
+        //https://github.com/AuroraWright/Luma3DS/blob/dfd50d9d7596ed1b77e0c2cd791aebd8d53cc401/sysmodules/loader/source/patcher.c#L742
+        static const u8 secureinfo_pattern[] = {
+            0x06, 0x46, 0x10, 0x48
+        },
+                        secureinfo_patch[] = {
+            0x00, 0x26
+        };
+
+        //Disable SecureInfo signature check
+        patch_memory(code, size,
+                secureinfo_pattern,
+                sizeof(secureinfo_pattern), 0,
+                secureinfo_patch,
+                sizeof(secureinfo_patch), 1
+            );
     }
 
     return 0;
